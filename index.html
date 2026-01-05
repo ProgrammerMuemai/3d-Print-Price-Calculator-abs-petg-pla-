@@ -1,0 +1,577 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>เครื่องคำนวณต้นทุน & ราคาพิมพ์ 3D (ABS / PETG / PLA)</title>
+  <style>
+    :root { --b:#e5e7eb; --t:#111827; --m:#6b7280; --bg:#f9fafb; --w:#fff; }
+    body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;margin:0;background:var(--bg);color:var(--t)}
+    .wrap{max-width:980px;margin:24px auto;padding:0 16px}
+    .card{background:var(--w);border:1px solid var(--b);border-radius:14px;padding:18px;box-shadow:0 1px 2px rgba(0,0,0,.04)}
+    h1{font-size:20px;margin:0 0 12px}
+    h2{font-size:16px;margin:18px 0 10px}
+    .grid{display:grid;gap:12px}
+    @media(min-width:860px){ .grid.cols2{grid-template-columns:1fr 1fr} .grid.cols3{grid-template-columns:1fr 1fr 1fr} }
+    label{font-size:13px;color:var(--m);display:block;margin-bottom:6px}
+    input,select{width:100%;padding:10px 12px;border:1px solid var(--b);border-radius:10px;font-size:14px;background:#fff}
+    .btns{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+    button{cursor:pointer;border:1px solid var(--b);background:#111827;color:#fff;padding:10px 14px;border-radius:10px;font-size:14px}
+    button.secondary{background:#fff;color:#111827}
+    .muted{color:var(--m);font-size:13px;line-height:1.5}
+    .kpi{display:grid;gap:10px}
+    @media(min-width:860px){ .kpi{grid-template-columns:1fr 1fr 1fr 1fr} }
+    .k{border:1px solid var(--b);border-radius:12px;padding:12px;background:#fff}
+    .k .v{font-size:18px;font-weight:700;margin-top:6px}
+    .table{width:100%;border-collapse:collapse;margin-top:10px}
+    .table th,.table td{border-bottom:1px solid var(--b);padding:10px 8px;text-align:left;font-size:14px}
+    .tag{display:inline-block;font-size:12px;padding:3px 8px;border-radius:999px;border:1px solid var(--b);color:#111827;background:#fff}
+    .best{background:#ecfeff;border-color:#06b6d4}
+    .best .tag{border-color:#06b6d4}
+    .right{text-align:right}
+    pre#devlog{margin-top:10px;white-space:pre-wrap;word-break:break-word;border:1px dashed var(--b);padding:10px;border-radius:10px;background:#fff}
+    .hint{font-size:12px;color:var(--m);margin-top:6px}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <h1>เครื่องคำนวณต้นทุน & ราคาพิมพ์ 3D (ABS / PETG / PLA)</h1>
+      <div class="muted">
+        ใส่ข้อมูลพื้นฐาน แล้วระบบจะคำนวณ <b>ต้นทุนรวม</b> และ <b>ราคาแนะนำ</b> 3 สูตร
+        จากนั้นเลือก “<b>ราคาที่ได้กำไรมากที่สุด</b>” ให้โดยอัตโนมัติ (จาก 3 สูตรนี้)
+      </div>
+
+      <h2>1) ข้อมูลการพิมพ์ (สูงสุด 3 ชิ้นงาน)</h2>
+      <div class="muted">กรอกเฉพาะชิ้นที่มีจริง ระบบจะรวม <b>น้ำหนักรวม</b> และ <b>เวลารวม</b> ให้อัตโนมัติ</div>
+
+      <div class="grid cols3" style="margin-top:10px">
+        <div>
+          <label>ชนิดเส้น (Filament)</label>
+          <select id="filamentType">
+            <option value="PLA">PLA</option>
+            <option value="PETG">PETG</option>
+            <option value="ABS">ABS</option>
+          </select>
+        </div>
+        <div></div><div></div>
+      </div>
+
+      <!-- Item 1 -->
+      <div class="grid cols3" style="margin-top:10px">
+        <div>
+          <label>ชิ้นงานที่ 1 : น้ำหนัก (กรัม)</label>
+          <input id="g1" type="number" min="0" step="0.1" value="50" />
+        </div>
+        <div>
+          <label>ชิ้นงานที่ 1 : เวลา (HH:MM)</label>
+          <input id="h1" type="text" placeholder="เช่น 14:50" value="03:00" />
+          <div class="hint">พิมพ์ได้ 14:50 (14 ชม. 50 นาที) หรือ 1.5 / 1,5 (ชั่วโมงทศนิยม)</div>
+        </div>
+        <div class="muted" style="display:flex;align-items:end">ตัวอย่าง: งานหลัก</div>
+      </div>
+
+      <!-- Item 2 -->
+      <div class="grid cols3" style="margin-top:6px">
+        <div>
+          <label>ชิ้นงานที่ 2 : น้ำหนัก (กรัม)</label>
+          <input id="g2" type="number" min="0" step="0.1" value="0" />
+        </div>
+        <div>
+          <label>ชิ้นงานที่ 2 : เวลา (HH:MM)</label>
+          <input id="h2" type="text" placeholder="เช่น 01:30" value="00:00" />
+        </div>
+        <div class="muted" style="display:flex;align-items:end">ออปชัน</div>
+      </div>
+
+      <!-- Item 3 -->
+      <div class="grid cols3" style="margin-top:6px">
+        <div>
+          <label>ชิ้นงานที่ 3 : น้ำหนัก (กรัม)</label>
+          <input id="g3" type="number" min="0" step="0.1" value="0" />
+        </div>
+        <div>
+          <label>ชิ้นงานที่ 3 : เวลา (HH:MM)</label>
+          <input id="h3" type="text" placeholder="เช่น 00:45" value="00:00" />
+        </div>
+        <div class="muted" style="display:flex;align-items:end">ออปชัน</div>
+      </div>
+
+      <div class="grid cols3" style="margin-top:10px">
+        <div class="k"><div class="muted">น้ำหนักรวม</div><div class="v" id="sumGrams">–</div></div>
+        <div class="k"><div class="muted">เวลารวม</div><div class="v" id="sumHours">–</div></div>
+        <div></div>
+      </div>
+
+      <h2>2) ต้นทุนวัสดุ / ค่าไฟ / ค่าเสื่อม</h2>
+      <div class="grid cols3" style="margin-bottom:12px">
+        <div>
+          <label>รุ่นเครื่องพิมพ์</label>
+          <select id="printerModel">
+            <option value="bambu_a1">Bambu Lab A1</option>
+            <option value="ender3_s1">Creality Ender 3 S1</option>
+            <option value="cr200b">Creality CR-200B</option>
+            <option value="kobra2">Anycubic Kobra 2</option>
+          </select>
+          <div class="muted">ใช้เพื่อช่วยตั้งค่า “วัตต์เฉลี่ย” ให้อัตโนมัติ</div>
+        </div>
+        <div>
+          <label>กำลังไฟเครื่องพิมพ์ (วัตต์ เฉลี่ย)</label>
+          <input id="printerWatt" type="number" min="0" step="1" value="120" />
+          <div class="muted">เป็นค่าเฉลี่ยตอนพิมพ์ (ไม่ใช่ช่วงอุ่นเครื่อง)</div>
+        </div>
+        <div>
+          <label style="display:flex;align-items:center;gap:10px">
+            <input id="autoWatt" type="checkbox" checked style="width:auto" />
+            ตั้งค่า Watt อัตโนมัติ (ตามรุ่นเครื่อง + ชนิดเส้น)
+          </label>
+          <div class="muted">ปิดอันนี้ถ้าคุณอยากกรอก Watt เอง</div>
+        </div>
+      </div>
+
+      <div class="grid cols3">
+        <div>
+          <label>ราคาเส้น PLA (บาท/กก.)</label>
+          <input id="pricePLA" type="number" min="0" step="1" value="450" />
+        </div>
+        <div>
+          <label>ราคาเส้น PETG (บาท/กก.)</label>
+          <input id="pricePETG" type="number" min="0" step="1" value="650" />
+        </div>
+        <div>
+          <label>ราคาเส้น ABS (บาท/กก.)</label>
+          <input id="priceABS" type="number" min="0" step="1" value="500" />
+        </div>
+      </div>
+
+      <div class="grid cols3" style="margin-top:12px">
+        <div>
+          <label>ค่าไฟ (บาท/หน่วย = kWh)</label>
+          <input id="elecRate" type="number" min="0" step="0.1" value="4.5" />
+        </div>
+        <div>
+          <label>ค่าเสื่อม/บำรุงรักษา/ค่าเครื่อง (บาท/ชั่วโมง)</label>
+          <input id="overheadPerHour" type="number" min="0" step="1" value="10" />
+        </div>
+        <div></div>
+      </div>
+
+      <div class="grid cols3" style="margin-top:12px">
+        <div>
+          <label>เผื่อเสีย/งานพลาด (Failure buffer %)</label>
+          <input id="failurePct" type="number" min="0" step="1" value="10" />
+        </div>
+        <div>
+          <label>ค่าแรง/เวลาประกอบ/เตรียมงาน (บาท/งาน)</label>
+          <input id="laborFlat" type="number" min="0" step="1" value="20" />
+        </div>
+        <div>
+          <label>บวกค่าแพ็กของ/ส่ง/อื่นๆ (บาท/งาน)</label>
+          <input id="extraFlat" type="number" min="0" step="1" value="10" />
+        </div>
+      </div>
+
+      <h2>3) การตั้งราคาขาย (3 สูตร)</h2>
+      <div class="grid cols3">
+        <div>
+          <label>สูตร A: Cost+ Markup (%)</label>
+          <input id="markupPct" type="number" min="0" step="1" value="120" />
+          <div class="muted">ตัวอย่าง 120% = ขาย = ต้นทุน x (1 + 1.20)</div>
+        </div>
+        <div>
+          <label>สูตร B: Target Margin (%)</label>
+          <input id="targetMarginPct" type="number" min="0" max="95" step="1" value="50" />
+          <div class="muted">Margin = กำไร/ราคาขาย (เช่น 50%)</div>
+        </div>
+        <div>
+          <label>สูตร C: Hourly rate (บาท/ชั่วโมง)</label>
+          <input id="hourlyRate" type="number" min="0" step="1" value="60" />
+          <div class="muted">คิดจาก “ค่าเวลาเครื่อง” + วัสดุ/ไฟ/ค่าเสื่อม</div>
+        </div>
+      </div>
+
+      <div class="btns">
+        <button id="calcBtn">คำนวณ</button>
+        <button class="secondary" id="saveBtn">บันทึกค่าเริ่มต้น</button>
+        <button class="secondary" id="resetBtn">รีเซ็ต</button>
+      </div>
+
+      <details style="margin-top:12px">
+        <summary class="muted">Dev log / tests (สำหรับดีบัก)</summary>
+        <pre id="devlog">(hidden)</pre>
+      </details>
+    </div>
+
+    <div class="card" style="margin-top:14px">
+      <h2>ผลลัพธ์</h2>
+      <div class="kpi" id="kpi"></div>
+
+      <h2 style="margin-top:16px">ราคาแนะนำ (3 สูตร) + เลือกกำไรมากที่สุด</h2>
+      <table class="table" id="priceTable">
+        <thead>
+          <tr>
+            <th>สูตร</th>
+            <th>แนวคิด</th>
+            <th class="right">ราคาขายแนะนำ (บาท)</th>
+            <th class="right">กำไร (บาท)</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+
+      <div class="muted" style="margin-top:10px">
+        หมายเหตุ: “กำไรมากที่สุด” ในที่นี้คือ <b>เลือกจาก 3 สูตรราคา</b> ที่คุณตั้งค่าไว้เท่านั้น
+      </div>
+    </div>
+  </div>
+
+<script>
+  const $ = (id) => document.getElementById(id);
+
+  function logDev(line){
+    const el = $("devlog");
+    if(!el) return;
+    el.textContent = (el.textContent === "(hidden)" ? "" : el.textContent) + line + "\n";
+  }
+
+  function money(n){
+    if(!Number.isFinite(n)) return "—";
+    return n.toLocaleString("th-TH", { maximumFractionDigits: 2 });
+  }
+
+  function assert(cond, msg){
+    if(!cond) throw new Error(msg);
+  }
+
+  // Parse:
+  // - HH:MM (minutes 0-59)
+  // - decimal hours (supports comma as decimal separator)
+  function parseTimeToHours(raw){
+    const s = String(raw ?? "").trim();
+    if(s === "") return 0;
+
+    // HH:MM
+    if(/^[0-9]+:[0-9]{1,2}$/.test(s)){
+      const [hh, mm] = s.split(":");
+      const h = Number(hh);
+      const m = Number(mm);
+      if(Number.isFinite(h) && Number.isFinite(m)){
+        // if minutes >= 60 treat as invalid to avoid silent wrong results
+        if(m < 0 || m >= 60) return NaN;
+        return h + (m / 60);
+      }
+    }
+
+    // decimal hours fallback
+    const normalized = s.replace(/,/g, ".");
+    const v = parseFloat(normalized);
+    return Number.isFinite(v) ? v : NaN;
+  }
+
+  function numVal(id){
+    const el = $(id);
+    if(!el) return 0;
+    const v = parseTimeToHours(el.value);
+    return Number.isFinite(v) ? v : 0;
+  }
+
+  function numValStrict(id){
+    const el = $(id);
+    if(!el) return 0;
+    const v = parseTimeToHours(el.value);
+    return Number.isFinite(v) ? v : NaN;
+  }
+
+  function getFilamentPricePerGram(type, plaKg, petgKg, absKg){
+    const mapKg = { PLA: plaKg, PETG: petgKg, ABS: absKg };
+    const perKg = mapKg[type] ?? 0;
+    return perKg / 1000.0;
+  }
+
+  const PRINTER_PRESETS = {
+    // ค่านี้คือ “วัตต์เฉลี่ยตอนพิมพ์” เพื่อใช้คิดค่าไฟ (kWh)
+    bambu_a1:  { label: "Bambu Lab A1",         watts: { PLA: 95,  PETG: 120, ABS: 150 } },
+    ender3_s1: { label: "Creality Ender 3 S1",  watts: { PLA: 70,  PETG: 90,  ABS: 120 } },
+    cr200b:    { label: "Creality CR-200B",     watts: { PLA: 120, PETG: 150, ABS: 180 } },
+    kobra2:    { label: "Anycubic Kobra 2",     watts: { PLA: 150, PETG: 160, ABS: 180 } },
+  };
+
+  function applyWattPresetIfEnabled(){
+    const auto = $("autoWatt");
+    const modelEl = $("printerModel");
+    const filamentEl = $("filamentType");
+    const wattEl = $("printerWatt");
+    if(!auto || !modelEl || !filamentEl || !wattEl) return;
+    if(!auto.checked) return;
+    const preset = PRINTER_PRESETS[modelEl.value];
+    if(!preset) return;
+    const w = preset.watts?.[filamentEl.value];
+    if(typeof w === "number" && Number.isFinite(w)) wattEl.value = String(w);
+  }
+
+  function getTotals(){
+    const grams = (numVal("g1") + numVal("g2") + numVal("g3"));
+    const h1 = numValStrict("h1");
+    const h2 = numValStrict("h2");
+    const h3 = numValStrict("h3");
+
+    // If invalid HH:MM entered (e.g., 10:99) show NaN on UI; but keep calc safe by treating invalid as 0.
+    const invalid = (!Number.isFinite(h1) && $("h1")?.value.trim() !== "") ||
+                    (!Number.isFinite(h2) && $("h2")?.value.trim() !== "") ||
+                    (!Number.isFinite(h3) && $("h3")?.value.trim() !== "");
+
+    const hours = (Number.isFinite(h1) ? h1 : 0) + (Number.isFinite(h2) ? h2 : 0) + (Number.isFinite(h3) ? h3 : 0);
+
+    return { grams, hours, invalid };
+  }
+
+  function updateTotalsUI(){
+    const { grams, hours, invalid } = getTotals();
+    const sg = $("sumGrams");
+    const sh = $("sumHours");
+    if(sg) sg.textContent = `${money(grams)} g`;
+    if(sh) sh.textContent = invalid ? "เวลามีรูปแบบผิด (นาทีต้อง 00-59)" : `${money(hours)} h`;
+    return { grams, hours };
+  }
+
+  function calc(){
+    applyWattPresetIfEnabled();
+
+    const type = $("filamentType")?.value || "PLA";
+    const { grams, hours } = updateTotalsUI();
+
+    const plaKg = numVal("pricePLA");
+    const petgKg = numVal("pricePETG");
+    const absKg  = numVal("priceABS");
+
+    const elecRate = numVal("elecRate");
+    const watt = numVal("printerWatt");
+    const overheadPerHour = numVal("overheadPerHour");
+
+    const failurePct = numVal("failurePct");
+    const laborFlat = numVal("laborFlat");
+    const extraFlat = numVal("extraFlat");
+
+    const markupPct = numVal("markupPct");
+    const targetMarginPct = numVal("targetMarginPct");
+    const hourlyRate = numVal("hourlyRate");
+
+    const pricePerGram = getFilamentPricePerGram(type, plaKg, petgKg, absKg);
+    const materialCost = grams * pricePerGram;
+
+    const kWh = (watt/1000.0) * hours;
+    const elecCost = kWh * elecRate;
+
+    const overheadCost = overheadPerHour * hours;
+
+    const flatCost = laborFlat + extraFlat;
+
+    const baseCost = materialCost + elecCost + overheadCost + flatCost;
+
+    const failureBuffer = baseCost * (failurePct/100.0);
+
+    const totalCost = baseCost + failureBuffer;
+
+    const priceA = totalCost * (1 + markupPct/100.0);
+
+    const m = targetMarginPct/100.0;
+    const priceB = (m >= 0.95) ? Infinity : (totalCost / (1 - m));
+
+    const priceC_beforeFailure = (materialCost + elecCost + overheadCost + flatCost) + (hours * hourlyRate);
+    const priceC = priceC_beforeFailure * (1 + failurePct/100.0);
+
+    const options = [
+      { key:"A", name:"สูตร A", idea:"Cost + Markup", price: priceA },
+      { key:"B", name:"สูตร B", idea:"Target Margin", price: priceB },
+      { key:"C", name:"สูตร C", idea:"Hourly Rate", price: priceC },
+    ].map(o => ({
+      ...o,
+      profit: (Number.isFinite(o.price) ? (o.price - totalCost) : -Infinity)
+    }));
+
+    let best = options[0];
+    for(const o of options){
+      if(o.profit > best.profit) best = o;
+    }
+
+    const kpiEl = $("kpi");
+    if(kpiEl){
+      const kpi = [
+        { label:"ต้นทุนวัสดุ", value: `${money(materialCost)} ฿` },
+        { label:"ค่าไฟ", value: `${money(elecCost)} ฿` },
+        { label:"ค่าเสื่อม/โอเวอร์เฮด", value: `${money(overheadCost)} ฿` },
+        { label:"ต้นทุนรวม (รวมเผื่อเสีย)", value: `${money(totalCost)} ฿` },
+      ];
+      kpiEl.innerHTML = kpi.map(x => `
+        <div class="k">
+          <div class="muted">${x.label}</div>
+          <div class="v">${x.value}</div>
+        </div>
+      `).join("");
+    }
+
+    const tbody = $("priceTable")?.querySelector("tbody");
+    if(tbody){
+      tbody.innerHTML = "";
+      for(const o of options){
+        const isBest = (o.key === best.key);
+        const tr = document.createElement("tr");
+        tr.className = isBest ? "best" : "";
+        tr.innerHTML = `
+          <td>
+            <span class="tag">${isBest ? "กำไรมากสุด" : "ตัวเลือก"}</span>
+            &nbsp; <b>${o.name}</b>
+          </td>
+          <td>${o.idea}</td>
+          <td class="right">${Number.isFinite(o.price) ? money(o.price) : "ตั้ง Margin สูงเกินไป"} ฿</td>
+          <td class="right">${Number.isFinite(o.profit) ? money(o.profit) : "—"} ฿</td>
+        `;
+        tbody.appendChild(tr);
+      }
+    }
+
+    return { grams, hours, totalCost, options, best };
+  }
+
+  function saveDefaults(){
+    const data = {
+      printerModel: $("printerModel")?.value ?? "bambu_a1",
+      autoWatt: $("autoWatt")?.checked ? "1" : "0",
+      filamentType: $("filamentType")?.value ?? "PLA",
+      g1: $("g1")?.value ?? "0",
+      h1: $("h1")?.value ?? "00:00",
+      g2: $("g2")?.value ?? "0",
+      h2: $("h2")?.value ?? "00:00",
+      g3: $("g3")?.value ?? "0",
+      h3: $("h3")?.value ?? "00:00",
+      pricePLA: $("pricePLA")?.value ?? "0",
+      pricePETG: $("pricePETG")?.value ?? "0",
+      priceABS: $("priceABS")?.value ?? "0",
+      elecRate: $("elecRate")?.value ?? "0",
+      printerWatt: $("printerWatt")?.value ?? "0",
+      overheadPerHour: $("overheadPerHour")?.value ?? "0",
+      failurePct: $("failurePct")?.value ?? "0",
+      laborFlat: $("laborFlat")?.value ?? "0",
+      extraFlat: $("extraFlat")?.value ?? "0",
+      markupPct: $("markupPct")?.value ?? "0",
+      targetMarginPct: $("targetMarginPct")?.value ?? "0",
+      hourlyRate: $("hourlyRate")?.value ?? "0",
+    };
+    localStorage.setItem("printCalcDefaultsV2", JSON.stringify(data));
+    alert("บันทึกค่าเริ่มต้นแล้ว");
+  }
+
+  function loadDefaults(){
+    const raw = localStorage.getItem("printCalcDefaultsV2") || localStorage.getItem("printCalcDefaultsV1");
+    if(!raw) return;
+    try{
+      const data = JSON.parse(raw);
+      const setVal = (id, v) => { const el = $(id); if(el && v != null) el.value = String(v); };
+
+      setVal("printerModel", data.printerModel);
+      if($("autoWatt") && data.autoWatt != null) $("autoWatt").checked = String(data.autoWatt) === "1" || data.autoWatt === true;
+      setVal("filamentType", data.filamentType);
+
+      setVal("g1", data.g1);
+      setVal("h1", data.h1);
+      setVal("g2", data.g2);
+      setVal("h2", data.h2);
+      setVal("g3", data.g3);
+      setVal("h3", data.h3);
+
+      setVal("pricePLA", data.pricePLA);
+      setVal("pricePETG", data.pricePETG);
+      setVal("priceABS", data.priceABS);
+
+      setVal("elecRate", data.elecRate);
+      setVal("printerWatt", data.printerWatt);
+      setVal("overheadPerHour", data.overheadPerHour);
+
+      setVal("failurePct", data.failurePct);
+      setVal("laborFlat", data.laborFlat);
+      setVal("extraFlat", data.extraFlat);
+
+      setVal("markupPct", data.markupPct);
+      setVal("targetMarginPct", data.targetMarginPct);
+      setVal("hourlyRate", data.hourlyRate);
+    }catch(e){
+      logDev("loadDefaults error: " + e);
+    }
+  }
+
+  function resetAll(){
+    localStorage.removeItem("printCalcDefaultsV2");
+    localStorage.removeItem("printCalcDefaultsV1");
+    location.reload();
+  }
+
+  function bind(){
+    const ids = [
+      "g1","h1","g2","h2","g3","h3",
+      "filamentType","printerModel","autoWatt","printerWatt",
+      "pricePLA","pricePETG","priceABS","elecRate","overheadPerHour","failurePct","laborFlat","extraFlat",
+      "markupPct","targetMarginPct","hourlyRate",
+    ];
+
+    for(const id of ids){
+      const el = $(id);
+      if(!el) continue;
+      const ev = (id === "autoWatt") ? "change" : "input";
+      el.addEventListener(ev, () => calc());
+    }
+
+    $("calcBtn")?.addEventListener("click", () => calc());
+    $("saveBtn")?.addEventListener("click", saveDefaults);
+    $("resetBtn")?.addEventListener("click", resetAll);
+  }
+
+  // --- Minimal in-page tests ---
+  function runTests(){
+    // snapshot current values so tests do not overwrite user input
+    const snapshotIds = ["g1","g2","g3","h1","h2","h3"];
+    const snap = {};
+    snapshotIds.forEach(id => { const el = $(id); if(el) snap[id] = el.value; });
+
+    try{
+      // HH:MM parsing (existing test)
+      $("h1").value = "14:50";
+      $("h2").value = "01:20";
+      $("h3").value = "00:30";
+      const t = getTotals();
+      // 14:50 = 14.8333..., 1:20 = 1.3333..., 0:30 = 0.5 รวม ≈ 16.6667
+      console.assert(Math.abs(t.hours - 16.6667) < 0.01, "HH:MM parsing failed");
+
+      // Extra tests
+      // decimal parsing with dot/comma
+      assert(Math.abs(parseTimeToHours("1.5") - 1.5) < 1e-9, "decimal dot failed");
+      assert(Math.abs(parseTimeToHours("1,5") - 1.5) < 1e-9, "decimal comma failed");
+
+      // invalid minutes
+      assert(Number.isNaN(parseTimeToHours("10:99")), "invalid minutes should be NaN");
+
+      logDev("Tests passed ✅");
+      console.log("All tests passed ✅");
+    }catch(e){
+      logDev("Tests failed: " + (e?.message || e));
+      console.error("Tests failed", e);
+    }finally{
+      // restore
+      snapshotIds.forEach(id => { const el = $(id); if(el && snap[id] !== undefined) el.value = snap[id]; });
+      calc();
+    }
+  }
+
+  // Boot
+  try{
+    bind();
+    loadDefaults();
+    applyWattPresetIfEnabled();
+    calc();
+    runTests();
+  }catch(e){
+    logDev("ERROR: " + (e?.message || e));
+    console.error(e);
+  }
+</script>
+</body>
+</html>
