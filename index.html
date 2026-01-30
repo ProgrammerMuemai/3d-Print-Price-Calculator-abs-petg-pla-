@@ -330,6 +330,7 @@
             <label>รุ่นเครื่องพิมพ์</label>
             <select id="printerModel">
               <option value="bambu_a1">Bambu Lab A1</option>
+              <option value="k2_pro">Creality K2 Pro</option>
               <option value="ender3_s1">Creality Ender 3 S1</option>
               <option value="cr200b">Creality CR-200B</option>
               <option value="kobra2">Anycubic Kobra 2</option>
@@ -518,6 +519,7 @@
   const PRINTER_PRESETS = {
     // ค่านี้คือ “วัตต์เฉลี่ยตอนพิมพ์” เพื่อใช้คิดค่าไฟ (kWh)
     bambu_a1:  { label: "Bambu Lab A1",         watts: { PLA: 95,  PETG: 120, ABS: 150 } },
+    k2_pro:    { label: "Creality K2 Pro",      watts: { PLA: 180, PETG: 200, ABS: 260 } },
     ender3_s1: { label: "Creality Ender 3 S1",  watts: { PLA: 70,  PETG: 90,  ABS: 120 } },
     cr200b:    { label: "Creality CR-200B",     watts: { PLA: 120, PETG: 150, ABS: 180 } },
     kobra2:    { label: "Anycubic Kobra 2",     watts: { PLA: 150, PETG: 160, ABS: 180 } },
